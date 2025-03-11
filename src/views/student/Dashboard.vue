@@ -108,7 +108,8 @@ const getStatusText = (status) => {
     'Starting': '启动中',
     'Preparing': '准备中',
     'Stopped': '已停止',
-    'Error': '错误'
+    'Error': '错误',
+    'Not Started': '未进行'
   }
   return statusMap[status] || status
 }

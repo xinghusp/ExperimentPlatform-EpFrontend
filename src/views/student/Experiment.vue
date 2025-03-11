@@ -27,7 +27,7 @@
       <div v-else class="desktop-container">
         <div class="desktop-header">
           <div class="desktop-info">
-            <h2>{{ taskInfo.title }}</h2>
+            <el-alert type="warning" show-icon :closable="false">由于实验人数较多，如果你连接失败或者长时间无法连接（超过1分钟），请尝试刷新页面。</el-alert>
             <div class="timer" v-if="hasTimeLimit">
               剩余时间: {{ formattedTime }}
             </div>
