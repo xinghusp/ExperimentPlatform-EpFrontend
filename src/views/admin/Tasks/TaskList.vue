@@ -7,17 +7,43 @@
       </el-button>
     </div>
 
+    <el-card class="filter-card">
+      <el-form :inline="true" :model="filterForm" @submit.prevent="applyFilter">
+        <el-form-item label="任务类型" style="width: 280px;">
+          <el-select v-model="filterForm.task_type" placeholder="选择类型" clearable>
+            <el-option label="远程桌面" value="guacamole" />
+            <el-option label="Jupyter" value="jupyter" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="applyFilter">筛选</el-button>
+          <el-button @click="resetFilter">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
     <el-card>
       <el-table :data="taskList" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="任务标题" />
+        <el-table-column label="任务类型" width="120">
+          <template #default="scope">
+            <el-tag :type="getTaskTypeTag(scope.row.task_type)">
+              {{ getTaskTypeName(scope.row.task_type) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="环境模板" width="150">
+          <template #default="scope">
+            <span v-if="scope.row.environment">{{ scope.row.environment.name }}</span>
+            <span v-else>自定义环境</span>
+          </template>
+        </el-table-column>
         <el-table-column label="时长/次数" width="120">
           <template #default="scope">
             {{ scope.row.max_duration ? `${scope.row.max_duration}分钟` : '不限时' }} / {{ scope.row.max_attempts }}次
           </template>
         </el-table-column>
-        <el-table-column prop="region_id" label="区域" width="120" />
-        <el-table-column prop="instance_type" label="实例类型" width="180" />
         <el-table-column prop="created_at" label="创建时间" width="180">
           <template #default="scope">
             {{ formatDate(scope.row.created_at) }}
@@ -44,13 +70,6 @@
         </el-table-column>
         <el-table-column label="操作" width="250">
           <template #default="scope">
-            <!-- <el-button 
-              type="primary" 
-              size="small"
-              @click="handleViewTask(scope.row)"
-            >
-              查看
-            </el-button> -->
             <el-button type="warning" size="small" @click="handleEditTask(scope.row)">
               编辑
             </el-button>
@@ -65,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getTasks, deleteTask } from '../../../api/task'
 import { ElMessageBox, ElMessage } from 'element-plus'
@@ -73,6 +92,9 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 const router = useRouter()
 const loading = ref(false)
 const taskList = ref([])
+const filterForm = reactive({
+  task_type: ''
+})
 
 // 格式化日期
 const formatDate = (dateString) => {
@@ -81,11 +103,36 @@ const formatDate = (dateString) => {
   return date.toLocaleString()
 }
 
+// 获取任务类型名称
+const getTaskTypeName = (type) => {
+  const typeMap = {
+    'guacamole': '远程桌面',
+    'jupyter': 'Jupyter'
+  }
+  return typeMap[type] || type
+}
+
+// 获取任务类型标签样式
+const getTaskTypeTag = (type) => {
+  const tagMap = {
+    'guacamole': 'success',
+    'jupyter': 'primary'
+  }
+  return tagMap[type] || ''
+}
+
 // 获取任务列表
 const fetchTaskList = async () => {
   try {
     loading.value = true
-    const res = await getTasks()
+
+    // 构建查询参数
+    const params = {}
+    if (filterForm.task_type) {
+      params.task_type = filterForm.task_type
+    }
+
+    const res = await getTasks(params)
     taskList.value = res
   } catch (error) {
     console.error('获取任务列表失败:', error)
@@ -95,9 +142,15 @@ const fetchTaskList = async () => {
   }
 }
 
-// 查看任务
-const handleViewTask = (row) => {
-  router.push(`/admin/tasks/${row.id}`)
+// 应用筛选
+const applyFilter = () => {
+  fetchTaskList()
+}
+
+// 重置筛选
+const resetFilter = () => {
+  filterForm.task_type = ''
+  fetchTaskList()
 }
 
 // 编辑任务
@@ -149,6 +202,10 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-card {
   margin-bottom: 20px;
 }
 

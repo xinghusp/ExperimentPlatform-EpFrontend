@@ -20,6 +20,7 @@ export function getTask(id) {
 
 // 创建任务 - 使用FormData上传文件
 export function createTask(formData) {
+  // 注意：formData 现在应该包含 task_type 和 environment_id
   return request({
     url: "/tasks/",
     method: "post",
@@ -108,6 +109,7 @@ export function endTask(studentTaskId) {
     method: "post",
   });
 }
+
 // 获取学生任务状态
 export function getStudentTaskStatus(studentTaskId) {
   return request({
@@ -115,10 +117,52 @@ export function getStudentTaskStatus(studentTaskId) {
     method: "get",
   });
 }
+
 // 获取 Guacamole 临时令牌
 export function getGuacamoleToken(studentTaskId) {
   return request({
     url: `/tasks/student/${studentTaskId}/guacamole-token`,
     method: "get",
+  });
+}
+
+// 新增 API - 获取 Jupyter 临时令牌
+export function getJupyterToken(studentTaskId) {
+  return request({
+    url: `/student-tasks/${studentTaskId}/jupyter-token`,
+    method: "get",
+  });
+}
+
+// 新增 API - 使用新端点获取学生任务列表（新版API）
+export function getStudentExperiments(params) {
+  return request({
+    url: "/student/tasks",
+    method: "get",
+    params,
+  });
+}
+
+// 新增 API - 开始实验（新版API）
+export function startExperiment(taskId) {
+  return request({
+    url: `/student/start-experiment/${taskId}`,
+    method: "post",
+  });
+}
+
+// 新增 API - 获取实验状态（新版API）
+export function getExperimentStatus(studentTaskId) {
+  return request({
+    url: `/student/${studentTaskId}`,
+    method: "get",
+  });
+}
+
+// 新增 API - 结束实验（新版API）
+export function endExperiment(studentTaskId) {
+  return request({
+    url: `/student/${studentTaskId}/end`,
+    method: "post",
   });
 }

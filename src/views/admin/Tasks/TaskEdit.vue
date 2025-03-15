@@ -14,6 +14,21 @@
               <el-input v-model="taskForm.title" placeholder="请输入任务标题" />
             </el-form-item>
 
+            <el-form-item label="任务类型" prop="task_type">
+              <el-tag size="large" :type="getTaskTypeTag(taskForm.task_type)">
+                {{ getTaskTypeName(taskForm.task_type) }}
+              </el-tag>
+              <div class="form-tip">任务类型创建后不可更改</div>
+            </el-form-item>
+
+            <el-form-item label="环境模板" prop="environment_id">
+              <div v-if="originalEnvironmentId">
+                <el-tag size="large">{{ environmentName }}</el-tag>
+                <div class="form-tip">环境模板创建后不可更改</div>
+              </div>
+              <div v-else>自定义环境配置</div>
+            </el-form-item>
+
             <el-form-item label="任务描述" prop="description">
               <el-input v-model="taskForm.description" type="textarea" :rows="3" placeholder="请输入任务描述" />
             </el-form-item>
@@ -33,44 +48,71 @@
             </el-form-item>
           </el-tab-pane>
 
-          <el-tab-pane label="阿里云配置" name="aliyun">
-            <el-form-item label="区域" prop="region_id">
-              <el-input v-model="taskForm.region_id" placeholder="例如：cn-hangzhou" />
-            </el-form-item>
+          <el-tab-pane label="环境配置" name="environment" v-if="!originalEnvironmentId">
+            <div v-if="taskForm.task_type === 'guacamole'">
+              <el-form-item label="区域" prop="region_id">
+                <el-input v-model="taskForm.region_id" placeholder="例如：cn-hangzhou" />
+              </el-form-item>
 
-            <el-form-item label="镜像ID" prop="image_id">
-              <el-input v-model="taskForm.image_id" placeholder="例如：m-bp1g7004ksh0oeuco0eo" />
-            </el-form-item>
+              <el-form-item label="镜像ID" prop="image_id">
+                <el-input v-model="taskForm.image_id" placeholder="例如：m-bp1g7004ksh0oeuco0eo" />
+              </el-form-item>
 
-            <el-form-item label="实例类型" prop="instance_type">
-              <el-input v-model="taskForm.instance_type" placeholder="例如：ecs.t5-lc1m1.small" />
-            </el-form-item>
+              <el-form-item label="实例类型" prop="instance_type">
+                <el-input v-model="taskForm.instance_type" placeholder="例如：ecs.t5-lc1m1.small" />
+              </el-form-item>
 
-            <el-form-item label="安全组ID" prop="security_group_id">
-              <el-input v-model="taskForm.security_group_id" placeholder="例如：sg-bp1fvzkj690y0cruek6d" />
-            </el-form-item>
+              <el-form-item label="安全组ID" prop="security_group_id">
+                <el-input v-model="taskForm.security_group_id" placeholder="例如：sg-bp1fvzkj690y0cruek6d" />
+              </el-form-item>
 
-            <el-form-item label="交换机ID" prop="vswitch_id">
-              <el-input v-model="taskForm.vswitch_id" placeholder="例如：vsw-bp1ddbrxdlrcbim46z8p2" />
-            </el-form-item>
+              <el-form-item label="交换机ID" prop="vswitch_id">
+                <el-input v-model="taskForm.vswitch_id" placeholder="例如：vsw-bp1ddbrxdlrcbim46z8p2" />
+              </el-form-item>
 
-            <el-form-item label="出网带宽(Mbps)" prop="internet_max_bandwidth_out">
-              <el-input-number v-model="taskForm.internet_max_bandwidth_out" :min="0" :max="100" />
-            </el-form-item>
+              <el-form-item label="出网带宽(Mbps)" prop="internet_max_bandwidth_out">
+                <el-input-number v-model="taskForm.internet_max_bandwidth_out" :min="0" :max="100" />
+              </el-form-item>
 
-            <el-form-item label="竞价策略" prop="spot_strategy">
-              <el-select v-model="taskForm.spot_strategy" placeholder="请选择竞价策略" style="width: 100%">
-                <el-option label="不使用竞价实例" value="NoSpot" />
-                <el-option label="设置上限价格" value="SpotWithPriceLimit" />
-                <el-option label="系统自动出价" value="SpotAsPriceGo" />
-              </el-select>
-            </el-form-item>
+              <el-form-item label="竞价策略" prop="spot_strategy">
+                <el-select v-model="taskForm.spot_strategy" placeholder="请选择竞价策略" style="width: 100%">
+                  <el-option label="不使用竞价实例" value="NoSpot" />
+                  <el-option label="设置上限价格" value="SpotWithPriceLimit" />
+                  <el-option label="系统自动出价" value="SpotAsPriceGo" />
+                </el-select>
+              </el-form-item>
 
-            <el-form-item label="实例密码" prop="password">
-              <el-input v-model="taskForm.password" show-password placeholder="设置访问实例的密码" />
-            </el-form-item>
+              <el-form-item label="实例密码" prop="password">
+                <el-input v-model="taskForm.password" show-password placeholder="设置访问实例的密码" />
+              </el-form-item>
+            </div>
 
-            <el-form-item label="自定义参数" prop="custom_params">
+            <div v-if="taskForm.task_type === 'jupyter'">
+              <el-form-item label="Jupyter镜像" prop="jupyter_image">
+                <el-input v-model="taskForm.jupyter_image" placeholder="例如: jupyter/datascience-notebook:latest" />
+                <div class="form-tip">
+                  Docker Hub上的Jupyter镜像名称
+                </div>
+              </el-form-item>
+
+              <el-form-item label="内存限制" prop="memory_limit">
+                <el-input-number v-model="taskForm.memory_limit" :min="512" :step="256" :max="8192" />
+                <span class="unit-label">MB</span>
+                <div class="form-tip">
+                  容器可使用的最大内存
+                </div>
+              </el-form-item>
+
+              <el-form-item label="CPU限制" prop="cpu_limit">
+                <el-input-number v-model="taskForm.cpu_limit" :min="0.1" :step="0.1" :max="4" :precision="1" />
+                <span class="unit-label">核</span>
+                <div class="form-tip">
+                  容器可使用的最大CPU核数
+                </div>
+              </el-form-item>
+            </div>
+
+            <el-form-item label="自定义参数" prop="custom_params_json">
               <el-input v-model="taskForm.custom_params_json" type="textarea" :rows="5"
                 placeholder="JSON格式的自定义参数(可选)" />
             </el-form-item>
@@ -129,10 +171,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getTask, updateTask } from '../../../api/task'
 import { getClasses } from '../../../api/class'
+import { getEnvironmentTemplate } from '../../../api/environment'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -146,6 +189,8 @@ const activeTab = ref('basic')
 const classList = ref([])
 const fileList = ref([])
 const attachments = ref([])
+const originalEnvironmentId = ref(null)
+const environmentName = ref('自定义环境')
 
 const taskForm = reactive({
   title: '',
@@ -153,6 +198,10 @@ const taskForm = reactive({
   max_duration: null,
   max_attempts: 1,
   class_ids: [],
+  task_type: 'guacamole',
+  environment_id: null,
+
+  // Guacamole (ECS) 参数
   region_id: 'cn-hangzhou',
   image_id: '',
   instance_type: 'ecs.t5-lc1m1.small',
@@ -161,6 +210,12 @@ const taskForm = reactive({
   internet_max_bandwidth_out: 5,
   spot_strategy: 'NoSpot',
   password: '',
+
+  // Jupyter 参数
+  jupyter_image: 'jupyter/datascience-notebook:latest',
+  memory_limit: 1024, // 默认1GB
+  cpu_limit: 1.0,
+
   custom_params_json: '{}'
 })
 
@@ -177,35 +232,27 @@ const taskRules = {
     { required: true, message: '请选择至少一个班级', trigger: 'change' },
     { type: 'array', min: 1, message: '请选择至少一个班级', trigger: 'change' }
   ],
-  region_id: [
-    { required: true, message: '请输入区域ID', trigger: 'blur' }
-  ],
-  image_id: [
-    { required: true, message: '请输入镜像ID', trigger: 'blur' }
-  ],
-  instance_type: [
-    { required: true, message: '请输入实例类型', trigger: 'blur' }
-  ],
-  security_group_id: [
-    { required: true, message: '请输入安全组ID', trigger: 'blur' }
-  ],
-  vswitch_id: [
-    { required: true, message: '请输入交换机ID', trigger: 'blur' }
-  ],
-  internet_max_bandwidth_out: [
-    { required: true, message: '请设置出网带宽', trigger: 'blur' },
-    { type: 'number', min: 0, message: '最小值为 0', trigger: 'blur' }
-  ],
-  spot_strategy: [
-    { required: true, message: '请选择竞价策略', trigger: 'change' }
-  ],
-  password: [
-    { required: true, message: '请设置实例密码', trigger: 'blur' },
-    { min: 8, message: '密码长度不能小于8个字符', trigger: 'blur' }
-  ],
   custom_params_json: [
     { validator: validateJson, trigger: 'blur' }
   ]
+}
+
+// 获取任务类型名称
+const getTaskTypeName = (type) => {
+  const typeMap = {
+    'guacamole': '远程桌面实验',
+    'jupyter': 'Jupyter Notebook实验'
+  }
+  return typeMap[type] || type
+}
+
+// 获取任务类型标签样式
+const getTaskTypeTag = (type) => {
+  const tagMap = {
+    'guacamole': 'success',
+    'jupyter': 'primary'
+  }
+  return tagMap[type] || ''
 }
 
 // 验证JSON格式
@@ -250,7 +297,6 @@ function handleRemove(file, fileList) {
 
 // 下载文件
 function downloadFile(file) {
-  // 此处应调用下载文件的API
   window.open(`/api/v1/tasks/${taskId}/attachments/${file.id}/download`)
 }
 
@@ -266,6 +312,20 @@ async function deleteFile(file) {
   } catch (error) {
     ElMessage.error('删除失败')
     console.error(error)
+  }
+}
+
+// 获取环境模板信息
+async function fetchEnvironmentInfo() {
+  if (!originalEnvironmentId.value) return
+
+  try {
+    const res = await getEnvironmentTemplate(originalEnvironmentId.value)
+    if (res) {
+      environmentName.value = res.name
+    }
+  } catch (error) {
+    console.error('获取环境模板信息失败:', error)
   }
 }
 
@@ -291,15 +351,29 @@ async function fetchTaskData() {
     taskForm.description = res.description || ''
     taskForm.max_duration = res.max_duration
     taskForm.max_attempts = res.max_attempts
+    taskForm.task_type = res.task_type || 'guacamole'
 
-    taskForm.region_id = res.region_id
-    taskForm.image_id = res.image_id
-    taskForm.instance_type = res.instance_type
-    taskForm.security_group_id = res.security_group_id
-    taskForm.vswitch_id = res.vswitch_id
-    taskForm.internet_max_bandwidth_out = res.internet_max_bandwidth_out
-    taskForm.spot_strategy = res.spot_strategy
-    taskForm.password = res.password
+    // 保存原始环境模板ID
+    if (res.environment_id) {
+      originalEnvironmentId.value = res.environment_id
+      taskForm.environment_id = res.environment_id
+      fetchEnvironmentInfo()
+    }
+
+    if (taskForm.task_type === 'guacamole') {
+      taskForm.region_id = res.region_id || 'cn-hangzhou'
+      taskForm.image_id = res.image_id || ''
+      taskForm.instance_type = res.instance_type || 'ecs.t5-lc1m1.small'
+      taskForm.security_group_id = res.security_group_id || ''
+      taskForm.vswitch_id = res.vswitch_id || ''
+      taskForm.internet_max_bandwidth_out = res.internet_max_bandwidth_out || 5
+      taskForm.spot_strategy = res.spot_strategy || 'NoSpot'
+      taskForm.password = res.password || ''
+    } else if (taskForm.task_type === 'jupyter') {
+      taskForm.jupyter_image = res.jupyter_image || 'jupyter/datascience-notebook:latest'
+      taskForm.memory_limit = res.memory_limit || 1024
+      taskForm.cpu_limit = res.cpu_limit || 1.0
+    }
 
     if (res.custom_params) {
       taskForm.custom_params_json = JSON.stringify(res.custom_params, null, 2)
@@ -347,15 +421,23 @@ async function submitForm() {
         }
         formData.append('max_attempts', taskForm.max_attempts)
 
-        // 添加阿里云配置
-        formData.append('region_id', taskForm.region_id)
-        formData.append('image_id', taskForm.image_id)
-        formData.append('instance_type', taskForm.instance_type)
-        formData.append('security_group_id', taskForm.security_group_id)
-        formData.append('vswitch_id', taskForm.vswitch_id)
-        formData.append('internet_max_bandwidth_out', taskForm.internet_max_bandwidth_out)
-        formData.append('spot_strategy', taskForm.spot_strategy)
-        formData.append('password', taskForm.password)
+        // 根据任务类型添加不同的配置
+        if (taskForm.task_type === 'guacamole' && !originalEnvironmentId.value) {
+          // 添加阿里云配置
+          formData.append('region_id', taskForm.region_id)
+          formData.append('image_id', taskForm.image_id)
+          formData.append('instance_type', taskForm.instance_type)
+          formData.append('security_group_id', taskForm.security_group_id)
+          formData.append('vswitch_id', taskForm.vswitch_id)
+          formData.append('internet_max_bandwidth_out', taskForm.internet_max_bandwidth_out)
+          formData.append('spot_strategy', taskForm.spot_strategy)
+          formData.append('password', taskForm.password)
+        } else if (taskForm.task_type === 'jupyter' && !originalEnvironmentId.value) {
+          // 添加Jupyter配置
+          formData.append('jupyter_image', taskForm.jupyter_image)
+          formData.append('memory_limit', taskForm.memory_limit)
+          formData.append('cpu_limit', taskForm.cpu_limit)
+        }
 
         // 处理自定义参数
         if (taskForm.custom_params_json && taskForm.custom_params_json !== '{}') {
@@ -405,13 +487,13 @@ async function submitForm() {
 // 根据字段名获取所属的标签页
 function getTabByFieldName(fieldName) {
   const basicFields = ['title', 'description', 'max_duration', 'max_attempts', 'class_ids']
-  const aliyunFields = ['region_id', 'image_id', 'instance_type', 'security_group_id',
+  const environmentFields = ['region_id', 'image_id', 'instance_type', 'security_group_id',
     'vswitch_id', 'internet_max_bandwidth_out', 'spot_strategy',
-    'password', 'custom_params_json']
+    'password', 'jupyter_image', 'memory_limit', 'cpu_limit', 'custom_params_json']
   const attachmentFields = ['files']
 
   if (basicFields.includes(fieldName)) return 'basic'
-  if (aliyunFields.includes(fieldName)) return 'aliyun'
+  if (environmentFields.includes(fieldName)) return 'environment'
   if (attachmentFields.includes(fieldName)) return 'attachments'
 
   return null
@@ -443,5 +525,17 @@ onMounted(() => {
 
 .upload-container {
   margin-top: 30px;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #606266;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.unit-label {
+  margin-left: 8px;
+  color: #606266;
 }
 </style>

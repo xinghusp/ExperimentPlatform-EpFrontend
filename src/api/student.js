@@ -49,3 +49,11 @@ export function deleteStudent(studentId) {
     method: "delete",
   });
 }
+
+// 获取学生个人信息
+export function getStudentProfile() {
+  return request({
+    url: `/student/profile`,
+    method: "get",
+  });
+}

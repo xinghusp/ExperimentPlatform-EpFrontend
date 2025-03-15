@@ -5,37 +5,48 @@
         <img src="../assets/logo.svg" alt="Logo" class="logo">
         <h1 class="title">实验环境平台</h1>
       </div>
-      
-      <el-menu
-        :default-active="activeMenu"
-        class="el-menu-vertical"
-        background-color="#001529"
-        text-color="#fff"
-        active-text-color="#409EFF"
-        :router="true"
-      >
+
+      <el-menu :default-active="activeMenu" class="el-menu-vertical" background-color="#001529" text-color="#fff"
+        active-text-color="#409EFF" :router="true">
         <el-menu-item index="/admin/dashboard">
-          <el-icon><Odometer /></el-icon>
+          <el-icon>
+            <Odometer />
+          </el-icon>
           <span>控制台</span>
         </el-menu-item>
-        
+
         <el-menu-item index="/admin/classes">
-          <el-icon><User /></el-icon>
+          <el-icon>
+            <User />
+          </el-icon>
           <span>班级管理</span>
         </el-menu-item>
-        
+
+        <el-menu-item index="/admin/environments">
+          <el-icon>
+            <el-icon>
+              <Cpu />
+            </el-icon>
+          </el-icon>
+          <span>环境模板管理</span>
+        </el-menu-item>
+
         <el-menu-item index="/admin/tasks">
-          <el-icon><Document /></el-icon>
+          <el-icon>
+            <Document />
+          </el-icon>
           <span>任务管理</span>
         </el-menu-item>
-        
+
         <el-menu-item index="/admin/tasks/monitor">
-          <el-icon><Monitor /></el-icon>
+          <el-icon>
+            <Monitor />
+          </el-icon>
           <span>任务监控</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
-    
+
     <el-container>
       <el-header class="header">
         <div class="header-left">
@@ -44,7 +55,7 @@
             <el-breadcrumb-item v-if="route.meta.title">{{ route.meta.title }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
-        
+
         <div class="header-right">
           <el-dropdown @command="handleCommand">
             <span class="user-dropdown">
@@ -59,7 +70,7 @@
           </el-dropdown>
         </div>
       </el-header>
-      
+
       <el-main>
         <router-view />
       </el-main>
