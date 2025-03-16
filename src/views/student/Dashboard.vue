@@ -7,7 +7,13 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>可用实验</span>
+
+              <span style="flex: 1;">可用实验</span>
+              <el-select v-model="filterType" placeholder="全部类型" clearable @change="handleFilterChange"
+                style="flex: 1; text-align: right;">
+                <el-option label="远程桌面实验" value="guacamole" />
+                <el-option label="Jupyter实验" value="jupyter" />
+              </el-select>
             </div>
           </template>
 
@@ -15,18 +21,24 @@
             <el-skeleton :rows="3" animated />
           </div>
 
-          <div v-else-if="taskList.length === 0" class="empty-container">
+          <div v-else-if="filteredTaskList.length === 0" class="empty-container">
             <el-empty description="暂无可用实验" />
           </div>
 
           <el-row :gutter="20" v-else>
-            <el-col v-for="task in taskList" :key="task.id" :xs="24" :sm="12" :md="8" :lg="6" class="task-card-col">
+            <el-col v-for="task in filteredTaskList" :key="task.id" :xs="24" :sm="12" :md="8" :lg="6"
+              class="task-card-col">
               <el-card class="task-card" shadow="hover">
                 <div class="task-header">
                   <h3 class="task-title">{{ task.title }}</h3>
-                  <el-tag :type="getStatusType(task.status)" class="task-status" v-if="task.status">
-                    {{ getStatusText(task.status) }}
-                  </el-tag>
+                  <div class="task-badges">
+                    <el-tag :type="getTaskTypeTag(task.task_type)" class="task-type-badge">
+                      {{ getTaskTypeName(task.task_type) }}
+                    </el-tag>
+                    <el-tag :type="getStatusType(task.status)" class="task-status" v-if="task.status">
+                      {{ getStatusText(task.status) }}
+                    </el-tag>
+                  </div>
                 </div>
 
                 <div class="task-content">
@@ -69,14 +81,29 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { getStudentTaskList, startTask, getStudentTaskStatus } from '../../api/task'
+import { Clock, RefreshRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const loading = ref(false)
 const taskList = ref([])
+const filterType = ref('')
+
+// 过滤后的任务列表
+const filteredTaskList = computed(() => {
+  if (!filterType.value) {
+    return taskList.value
+  }
+  return taskList.value.filter(task => task.task_type === filterType.value)
+})
+
+// 处理过滤变化
+const handleFilterChange = () => {
+  // 可以在这里添加额外逻辑
+}
 
 // 准备状态对话框
 const polling = ref(null)
@@ -99,6 +126,24 @@ const getStatusType = (status) => {
     'Error': 'danger'
   }
   return statusMap[status] || ''
+}
+
+// 获取任务类型名称
+const getTaskTypeName = (type) => {
+  const typeMap = {
+    'guacamole': '远程桌面',
+    'jupyter': 'Jupyter'
+  }
+  return typeMap[type] || type || '未知类型'
+}
+
+// 获取任务类型标签样式
+const getTaskTypeTag = (type) => {
+  const tagMap = {
+    'guacamole': 'success',
+    'jupyter': 'primary'
+  }
+  return tagMap[type] || ''
 }
 
 // 获取状态文本
@@ -155,7 +200,7 @@ async function handleStartTask(task) {
 
     if (task.status === 'Running') {
       // 如果任务已经在运行，直接跳转到任务页面
-      router.push(`/student/tasks/${task.id}`)
+      router.push(`/student/experiment/${task.student_task_id}`)
       return
     }
 
@@ -205,23 +250,26 @@ function startStatusPolling(studentTaskId) {
     try {
       const status = await getStudentTaskStatus(studentTaskId)
 
-      preparingDialog.value.status = status.ecs_instance_status
+      // 根据任务类型判断状态字段
+      const instanceStatus = status.status
+
+      preparingDialog.value.status = instanceStatus
 
       // 根据状态更新消息
-      if (status.ecs_instance_status === 'Preparing') {
+      if (instanceStatus === 'Preparing') {
         preparingDialog.value.message = '正在准备实验环境，请稍候...'
         preparingDialog.value.percentage = preparingDialog.value.percentage < 50 ? ++preparingDialog.value.percentage : 50;
-      } else if (status.ecs_instance_status === 'Starting') {
+      } else if (instanceStatus === 'Starting') {
         preparingDialog.value.message = '实验环境即将就绪，请稍候...'
-        preparingDialog.value.percentage = preparingDialog.value.percentage < 99 ? ++preparingDialog.value.percentage : 99;;
-      } else if (status.ecs_instance_status === 'Running') {
+        preparingDialog.value.percentage = preparingDialog.value.percentage < 99 ? ++preparingDialog.value.percentage : 99;
+      } else if (instanceStatus === 'Running') {
         preparingDialog.value.percentage = 100;
         // 环境就绪，停止轮询并跳转
         clearInterval(polling.value)
         preparingDialog.value.visible = false
         ElMessage.success('实验环境已就绪')
         router.push(`/student/experiment/${preparingDialog.value.studentTaskId}`)
-      } else if (['Stopped', 'Error'].includes(status.ecs_instance_status)) {
+      } else if (['Stopped', 'Error'].includes(instanceStatus)) {
         // 发生错误，停止轮询
         clearInterval(polling.value)
         preparingDialog.value.visible = false
@@ -294,9 +342,19 @@ onMounted(() => {
 
 .task-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   margin-bottom: 15px;
+}
+
+.task-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.task-type-badge {
+  font-size: 12px;
 }
 
 .task-title {

@@ -38,7 +38,7 @@
             </el-form-item>
 
             <el-form-item label="最大尝试次数" prop="max_attempts">
-              <el-input-number v-model="taskForm.max_attempts" :min="1" :max="10" />
+              <el-input-number v-model="taskForm.max_attempts" :min="1" :max="9999" />
             </el-form-item>
 
             <el-form-item label="分配班级" prop="class_ids">

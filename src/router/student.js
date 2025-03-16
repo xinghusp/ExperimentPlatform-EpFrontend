@@ -16,9 +16,4 @@ export default [
     component: () => import("../views/student/Experiment.vue"),
     meta: { title: "实验环境", activeMenu: "dashboard" },
   },
-  {
-    path: "testrdp",
-    component: () => import("../views/student/TestRemote.vue"),
-    meta: { title: "测试RDP", activeMenu: "dashboard" },
-  },
 ];

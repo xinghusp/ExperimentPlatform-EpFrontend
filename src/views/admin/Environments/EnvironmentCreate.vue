@@ -35,6 +35,10 @@
                         <el-input v-model="form.image" placeholder="例如：m-bp1g7004ksh0oeuco0eo" />
                     </el-form-item>
 
+                    <el-form-item label="密码" prop="password">
+                        <el-input v-model="form.password" placeholder="为空则为每个实例随机生成" type="password" show-password />
+                    </el-form-item>
+
                     <el-form-item label="实例类型" prop="instance_type">
                         <el-input v-model="form.instance_type" placeholder="例如：ecs.t5-lc1m1.small" />
                     </el-form-item>
@@ -85,6 +89,53 @@
                             容器可使用的最大CPU核数
                         </div>
                     </el-form-item>
+
+                    <el-form-item label="启动命令" prop="command">
+                        <el-input v-model="form.command" placeholder="替代镜像默认的启动命令，为空则使用镜像的启动命令" />
+                        <div class="form-tip">
+                            替代镜像默认的启动命令，如不确定请留空
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="端口映射配置">
+                        <el-table :data="portMappingsList" style="width: 100%">
+                            <el-table-column label="源端口/协议" width="250">
+                                <template #default="{ row }">
+                                    <el-input v-model="row.source" placeholder="例如：80/tcp" @change="updatePortsMap" />
+                                </template>
+                            </el-table-column>
+
+                            <el-table-column label="目的端口/协议" width="250">
+                                <template #default="{ row }">
+                                    <el-input v-model="row.target" placeholder="例如：8080/tcp (可选)"
+                                        @change="updatePortsMap" />
+                                </template>
+                            </el-table-column>
+
+                            <el-table-column label="操作">
+                                <template #default="{ $index }">
+                                    <el-button type="danger" circle size="small" @click="removePortMapping($index)">
+                                        <el-icon>
+                                            <Delete />
+                                        </el-icon>
+                                    </el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+
+                        <div style="margin-top: 15px;">
+                            <el-button type="primary" @click="addPortMapping">
+                                <el-icon>
+                                    <Plus />
+                                </el-icon>
+                                添加端口映射
+                            </el-button>
+                        </div>
+
+                    </el-form-item>
+
+
+
+
                 </template>
 
                 <el-form-item label="自定义参数" prop="custom_params_json">
@@ -114,6 +165,7 @@ const route = useRoute()
 const formRef = ref(null)
 const submitting = ref(false)
 const loading = ref(false)
+const portMappingsList = ref([]);
 
 // 判断是否为编辑模式
 const isEdit = computed(() => {
@@ -133,10 +185,13 @@ const form = reactive({
     vswitch_id: '',
     internet_max_bandwidth_out: 5,
     spot_strategy: 'SpotAsPriceGo',
+    password: "",
 
     // Jupyter 参数
     memory_limit: 1024,
     cpu_limit: 1.0,
+    ports_map: {},
+    command: "",
 
     // 通用参数
     custom_params_json: '{}'
@@ -205,11 +260,14 @@ async function fetchEnvironmentTemplate() {
                 form.security_group_id = config.security_group_id || ''
                 form.vswitch_id = config.vswitch_id || ''
                 form.internet_max_bandwidth_out = config.internet_max_bandwidth_out || 5
-                form.spot_strategy = config.spot_strategy || 'SpotAsPriceGo'
+                form.spot_strategy = config.spot_strategy || 'SpotAsPriceGo',
+                    form.password = config.password || ''
             } else if (form.type === 'jupyter') {
                 form.image = res.image || 'jupyter/datascience-notebook:latest'
                 form.memory_limit = config.memory || 1024
                 form.cpu_limit = config.cpu || 1.0
+                form.command = config.command || ''
+                form.ports_map = config.ports_map || {}
             }
 
             // 处理自定义参数
@@ -250,13 +308,16 @@ async function submitForm() {
                         security_group_id: form.security_group_id,
                         vswitch_id: form.vswitch_id,
                         internet_max_bandwidth_out: form.internet_max_bandwidth_out,
-                        spot_strategy: form.spot_strategy
+                        spot_strategy: form.spot_strategy,
+                        password: form.password
                     })
                 } else if (form.type === 'jupyter') {
                     Object.assign(resourceConfig, {
                         image: form.image,
                         memory: form.memory_limit,
-                        cpu: form.cpu_limit
+                        cpu: form.cpu_limit,
+                        command: form.command,
+                        ports_map: form.ports_map
                     })
                 }
 
@@ -300,11 +361,42 @@ async function submitForm() {
         }
     })
 }
+// 添加新端口映射
+const addPortMapping = () => {
+    portMappingsList.value.push({
+        source: '',
+        target: ''
+    });
+};
 
+// 删除端口映射
+const removePortMapping = (index) => {
+    portMappingsList.value.splice(index, 1);
+    updatePortsMap();
+};
+
+// 更新ports_map对象
+const updatePortsMap = () => {
+    const newPortsMap = {};
+    portMappingsList.value.forEach(mapping => {
+        if (mapping.source.trim()) {
+            newPortsMap[mapping.source.trim()] = mapping.target.trim();
+        }
+    });
+    form.ports_map.value = newPortsMap;
+};
 // 组件挂载时加载数据
-onMounted(() => {
+onMounted(async () => {
     if (isEdit.value) {
-        fetchEnvironmentTemplate()
+        await fetchEnvironmentTemplate()
+    }
+    if (form.ports_map.value && Object.keys(form.ports_map.value).length > 0) {
+        Object.entries(form.ports_map.value).forEach(([source, target]) => {
+            portMappingsList.value.push({ source, target });
+        });
+    } else {
+        // 如果没有现有数据，添加一个空行
+        addPortMapping();
     }
 })
 </script>

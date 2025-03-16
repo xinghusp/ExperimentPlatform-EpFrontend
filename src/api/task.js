@@ -37,6 +37,9 @@ export function updateTask(id, data) {
     url: `/tasks/${id}`,
     method: "put",
     data,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 }
 
@@ -78,11 +81,9 @@ export function getStudentTaskList(params) {
 // 开始执行任务
 export function startTask(taskId) {
   return request({
-    url: "/tasks/student/start",
+    url: `/student/start-experiment/${taskId}`,
     method: "post",
-    data: {
-      task_id: taskId,
-    },
+    data: {},
   });
 }
 
@@ -97,7 +98,7 @@ export function checkTaskStatus(studentTaskId) {
 // 更新心跳
 export function updateHeartbeat(studentTaskId) {
   return request({
-    url: `/tasks/student/${studentTaskId}/heartbeat`,
+    url: `/student/heartbeat/${studentTaskId}`,
     method: "post",
   });
 }
@@ -105,7 +106,7 @@ export function updateHeartbeat(studentTaskId) {
 // 结束任务
 export function endTask(studentTaskId) {
   return request({
-    url: `/tasks/student/${studentTaskId}/end`,
+    url: `/student/stop-experiment/${studentTaskId}`,
     method: "post",
   });
 }
@@ -121,7 +122,7 @@ export function getStudentTaskStatus(studentTaskId) {
 // 获取 Guacamole 临时令牌
 export function getGuacamoleToken(studentTaskId) {
   return request({
-    url: `/tasks/student/${studentTaskId}/guacamole-token`,
+    url: `/student/${studentTaskId}/guacamole-token`,
     method: "get",
   });
 }
@@ -129,7 +130,7 @@ export function getGuacamoleToken(studentTaskId) {
 // 新增 API - 获取 Jupyter 临时令牌
 export function getJupyterToken(studentTaskId) {
   return request({
-    url: `/student-tasks/${studentTaskId}/jupyter-token`,
+    url: `/student/${studentTaskId}/jupyter-token`,
     method: "get",
   });
 }

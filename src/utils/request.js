@@ -9,6 +9,7 @@ const request = axios.create({
     "Content-Type": "application/json",
   },
 });
+axios.defaults.withCredentials = true;
 
 // 请求拦截器
 request.interceptors.request.use(
