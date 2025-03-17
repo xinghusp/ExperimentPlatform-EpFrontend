@@ -12,7 +12,7 @@
               <el-select v-model="filterType" placeholder="全部类型" clearable @change="handleFilterChange"
                 style="flex: 1; text-align: right;">
                 <el-option label="远程桌面实验" value="guacamole" />
-                <el-option label="Jupyter实验" value="jupyter" />
+                <el-option label="Jupyter(Python)实验" value="jupyter" />
               </el-select>
             </div>
           </template>
@@ -132,7 +132,7 @@ const getStatusType = (status) => {
 const getTaskTypeName = (type) => {
   const typeMap = {
     'guacamole': '远程桌面',
-    'jupyter': 'Jupyter'
+    'jupyter': 'Jupyter(Python)'
   }
   return typeMap[type] || type || '未知类型'
 }

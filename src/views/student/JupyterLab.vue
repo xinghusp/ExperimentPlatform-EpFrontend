@@ -26,9 +26,6 @@
             <div v-else class="jupyter-view-container">
                 <div class="jupyter-header">
                     <div class="jupyter-info">
-                        <el-alert type="info" show-icon :closable="false">
-                            Jupyter实验环境已准备就绪。点击"打开Jupyter"按钮访问您的实验环境。
-                        </el-alert>
                         <div class="timer" v-if="hasTimeLimit">
                             剩余时间: {{ formattedTime }}
                         </div>
@@ -55,7 +52,7 @@
                     <div class="jupyter-instructions">
                         <h4>如何使用Jupyter进行实验</h4>
                         <ol>
-                            <li>点击"打开Jupyter"按钮将在新窗口中打开实验环境</li>
+                            <li>点击"打开Jupyter"按钮将在新窗口中打开Web Based Python实验环境</li>
                             <li>Jupyter支持创建Notebook、编辑代码、运行分析等功能</li>
                             <li>实验结束前请保存您的工作，实验结束后环境将被销毁</li>
                             <li>如遇问题，请尝试刷新页面或联系教师</li>
@@ -63,7 +60,7 @@
 
                         <el-divider />
 
-                        <div class="file-operations" v-if="isRunning">
+                        <div class="file-operations" v-if="false"> <!--v-if="isRunning"--> <!--TODO: 后端还没实现，先隐藏了-->
                             <h4>文件管理</h4>
                             <p>上传本地文件到Jupyter环境：</p>
                             <el-upload :action="uploadUrl" :headers="uploadHeaders" multiple
