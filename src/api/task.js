@@ -4,7 +4,7 @@ import request from "../utils/request";
 // 获取任务列表
 export function getTasks(params) {
   return request({
-    url: "/tasks/",
+    url: "/tasks/student/list",
     method: "get",
     params,
   });
@@ -54,7 +54,7 @@ export function deleteTask(id) {
 // 获取学生任务执行记录
 export function getStudentTasks(params) {
   return request({
-    url: "/tasks/admin/student_tasks",
+    url: "/tasks/student_tasks",
     method: "get",
     params,
   });
@@ -63,7 +63,7 @@ export function getStudentTasks(params) {
 // 强制结束学生任务
 export function forceEndStudentTask(id) {
   return request({
-    url: `/tasks/admin/student_tasks/${id}/force_end`,
+    url: `/tasks/student_tasks/${id}/force_end`,
     method: "post",
   });
 }

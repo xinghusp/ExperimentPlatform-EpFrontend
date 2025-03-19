@@ -22,7 +22,7 @@
           </div>
         </el-card>
       </el-col>
-      
+
       <el-col :span="8">
         <el-card class="dashboard-card">
           <template #header>
@@ -44,7 +44,7 @@
           </div>
         </el-card>
       </el-col>
-      
+
       <el-col :span="8">
         <el-card class="dashboard-card">
           <template #header>
@@ -67,7 +67,7 @@
         </el-card>
       </el-col>
     </el-row>
-    
+
     <el-row :gutter="20" style="margin-top: 20px">
       <el-col :span="12">
         <el-card class="dashboard-card">
@@ -78,12 +78,12 @@
           </template>
           <el-table :data="activeExperiments" stripe style="width: 100%" v-loading="loading">
             <el-table-column prop="id" label="ID" width="80" />
-            <el-table-column prop="student.name" label="学生" />
-            <el-table-column prop="task.title" label="任务" />
-            <el-table-column prop="ecs_instance_status" label="状态">
+            <el-table-column prop="student_name" label="学生" />
+            <el-table-column prop="task_name" label="任务" />
+            <el-table-column prop="status" label="状态">
               <template #default="scope">
-                <el-tag :type="getStatusType(scope.row.ecs_instance_status)">
-                  {{ scope.row.ecs_instance_status }}
+                <el-tag :type="getStatusType(scope.row.status)">
+                  {{ scope.row.status }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -94,11 +94,7 @@
             </el-table-column>
             <el-table-column label="操作" width="120">
               <template #default="scope">
-                <el-button 
-                  type="danger" 
-                  size="small"
-                  @click="handleForceEnd(scope.row)"
-                >
+                <el-button type="danger" size="small" @click="handleForceEnd(scope.row)">
                   强制结束
                 </el-button>
               </template>
@@ -106,7 +102,7 @@
           </el-table>
         </el-card>
       </el-col>
-      
+
       <el-col :span="12">
         <el-card class="dashboard-card">
           <template #header>
@@ -125,11 +121,7 @@
             </el-table-column>
             <el-table-column label="操作" width="120">
               <template #default="scope">
-                <el-button 
-                  type="primary" 
-                  size="small"
-                  @click="handleEditTask(scope.row)"
-                >
+                <el-button type="primary" size="small" @click="handleEditTask(scope.row)">
                   查看
                 </el-button>
               </template>
@@ -190,10 +182,10 @@ const handleForceEnd = async (row) => {
         type: 'warning'
       }
     )
-    
+
     await forceEndStudentTask(row.id)
     ElMessage.success('操作成功，实验将被强制结束')
-    
+
     // 刷新数据
     fetchActiveExperiments()
   } catch (error) {
@@ -247,14 +239,14 @@ const fetchStats = async () => {
     // 获取班级总数
     const classesRes = await getClasses()
     stats.classCount = classesRes.length
-    
+
     // 计算学生总数
     let studentCount = 0
     classesRes.forEach(item => {
       studentCount += item.student_count || 0
     })
     stats.studentCount = studentCount
-    
+
     // 获取任务总数
     const tasksRes = await getTasks()
     stats.taskCount = tasksRes.length

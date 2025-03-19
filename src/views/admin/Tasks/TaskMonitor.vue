@@ -49,28 +49,28 @@
           <template #default="scope">
             {{ scope.row.student?.name || '未知' }}
             <el-tooltip content="学号" placement="top">
-              <el-text type="info" class="student-id">{{ scope.row.student?.student_id }}</el-text>
+              <el-text type="info" class="student-id">{{ scope.row.student_id }}</el-text>
             </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column label="任务" width="180">
           <template #default="scope">
             <div>{{ scope.row.task?.title }}</div>
-            <el-tag size="small" :type="getTaskTypeTag(scope.row.task?.task_type)">
-              {{ getTaskTypeName(scope.row.task?.task_type) }}
+            <el-tag size="small" :type="getTaskTypeTag(scope.row.task_type)">
+              {{ getTaskTypeName(scope.row.task_type) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.ecs_instance_status || scope.row.container_status)">
-              {{ scope.row.ecs_instance_status || scope.row.container_status }}
+            <el-tag :type="getStatusType(scope.row.status)">
+              {{ scope.row.status }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="访问信息" width="140">
+        <!-- <el-table-column label="访问信息" width="140">
           <template #default="scope">
-            <template v-if="scope.row.task?.task_type === 'guacamole'">
+            <template v-if="scope.row.task_type === 'guacamole'">
               <span v-if="scope.row.ecs_ip_address">
                 {{ scope.row.ecs_ip_address }}
                 <el-button :icon="CopyDocument" circle size="small" link
@@ -85,7 +85,7 @@
               </el-button>
             </template>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column label="开始/结束时间" width="300">
           <template #default="scope">
             <div>开始：{{ formatDate(scope.row.start_at) }}</div>
