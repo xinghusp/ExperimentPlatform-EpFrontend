@@ -4,7 +4,7 @@ import request from "../utils/request";
 // 获取任务列表
 export function getTasks(params) {
   return request({
-    url: "/tasks/student/list",
+    url: "/tasks/",
     method: "get",
     params,
   });
@@ -54,7 +54,7 @@ export function deleteTask(id) {
 // 获取学生任务执行记录
 export function getStudentTasks(params) {
   return request({
-    url: "/tasks/student_tasks",
+    url: "/tasks/query-student-tasks/",
     method: "get",
     params,
   });

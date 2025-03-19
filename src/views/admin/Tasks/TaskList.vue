@@ -79,6 +79,12 @@
           </template>
         </el-table-column>
       </el-table>
+      <!-- 添加分页组件 -->
+      <div class="pagination-container">
+        <el-pagination v-model:current-page="pagination.currentPage" v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" :total="pagination.total"
+          @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      </div>
     </el-card>
   </div>
 </template>
@@ -95,7 +101,12 @@ const taskList = ref([])
 const filterForm = reactive({
   task_type: ''
 })
-
+// 添加分页状态
+const pagination = reactive({
+  currentPage: 1,
+  pageSize: 10,
+  total: 0
+})
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '-'
@@ -127,13 +138,18 @@ const fetchTaskList = async () => {
     loading.value = true
 
     // 构建查询参数
-    const params = {}
+    const params = {
+      skip: (pagination.currentPage - 1) * pagination.pageSize,
+      limit: pagination.pageSize
+    }
     if (filterForm.task_type) {
       params.task_type = filterForm.task_type
     }
 
     const res = await getTasks(params)
-    taskList.value = res
+    //taskList.value = res
+    taskList.value = Array.isArray(res) ? res : (res.items || [])
+    pagination.total = res.total || (Array.isArray(res) ? res.length : 0)
   } catch (error) {
     console.error('获取任务列表失败:', error)
     ElMessage.error('获取任务列表失败')
@@ -141,9 +157,21 @@ const fetchTaskList = async () => {
     loading.value = false
   }
 }
+// 处理每页显示数量变化
+const handleSizeChange = (val) => {
+  pagination.pageSize = val
+  pagination.currentPage = 1 // 重置到第一页
+  fetchTaskList()
+}
 
+// 处理页码变化
+const handleCurrentChange = (val) => {
+  pagination.currentPage = val
+  fetchTaskList()
+}
 // 应用筛选
 const applyFilter = () => {
+  pagination.currentPage = 1
   fetchTaskList()
 }
 
@@ -211,5 +239,11 @@ onMounted(() => {
 
 .class-item {
   margin-bottom: 8px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 </style>
