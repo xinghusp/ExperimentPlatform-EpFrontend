@@ -269,8 +269,8 @@ const fetchStudentTasks = async () => {
     }
 
     const res = await getStudentTasks(params)
-    studentTasks.value = res.items || []
-    total.value = res.total || 0
+    studentTasks.value = Array.isArray(res) ? res : (res.items || [])
+    total.value = res.total || (Array.isArray(res) ? res.length : 0)
   } catch (error) {
     console.error('获取任务执行记录失败:', error)
     ElMessage.error('获取任务执行记录失败')
