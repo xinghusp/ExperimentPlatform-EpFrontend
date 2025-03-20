@@ -133,7 +133,9 @@ import { getStudentTasks, forceEndStudentTask, getTasks } from '../../../api/tas
 import { getClasses } from '../../../api/class'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { Refresh, CopyDocument } from '@element-plus/icons-vue'
-import dateUtils from '../../../utils/dateUtils';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+dayjs.extend(utc)
 
 const loading = ref(false)
 const studentTasks = ref([])
@@ -155,8 +157,7 @@ const filterForm = reactive({
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  const date = new Date(dateString)
-  return date.toLocaleString()
+  return dayjs.utc(dateString).local().format('YYYY-MM-DD HH:mm:ss')
 }
 
 // 复制到剪贴板
@@ -204,9 +205,9 @@ const isRunning = (task) => {
 // 计算运行时长
 const calculateRuntime = (task) => {
   if (!task.start_at) return '-'
-
-  const start = new Date(dateUtils.formatLocalTime(task.start_at))
-  const end = task.end_at ? new Date(dateUtils.formatLocalTime(task.end_at)) : new Date()
+  if ((task.status == 'Stopped' || task.status == 'Error') && !task.end_at) return '-'
+  const start = new Date(task.start_at)
+  const end = task.end_at ? new Date(task.end_at) : new Date()
 
   const diff = Math.floor((end - start) / 1000)
 

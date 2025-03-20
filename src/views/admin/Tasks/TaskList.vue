@@ -94,6 +94,9 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getTasks, deleteTask } from '../../../api/task'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+dayjs.extend(utc)
 
 const router = useRouter()
 const loading = ref(false)
@@ -110,8 +113,7 @@ const pagination = reactive({
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  const date = new Date(dateString)
-  return date.toLocaleString()
+  return dayjs.utc(dateString).local().format('YYYY-MM-DD HH:mm:ss')
 }
 
 // 获取任务类型名称

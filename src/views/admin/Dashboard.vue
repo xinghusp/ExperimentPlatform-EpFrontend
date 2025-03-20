@@ -139,13 +139,14 @@ import { useRouter } from 'vue-router'
 import { getStudentTasks, forceEndStudentTask, getTasks } from '../../api/task'
 import { getClasses } from '../../api/class'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import dateUtils from '../../utils/dateUtils'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 
 const router = useRouter()
 const loading = ref(false)
 const activeExperiments = ref([])
 const recentTasks = ref([])
-
+dayjs.extend(utc)
 const stats = reactive({
   classCount: 0,
   studentCount: 0,
@@ -155,8 +156,8 @@ const stats = reactive({
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  const date = new Date(dateUtils.formatLocalTime(dateString))
-  return date.toLocaleString()
+
+  return dayjs.utc(dateString).local().format('YYYY-MM-DD HH:mm:ss')
 }
 
 // 根据状态获取标签类型

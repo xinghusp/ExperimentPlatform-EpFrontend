@@ -5,7 +5,7 @@ import studentRoutes from "./student";
 const routes = [
   {
     path: "/",
-    redirect: "/admin/login",
+    redirect: "/student/login",
   },
   {
     path: "/admin/login",

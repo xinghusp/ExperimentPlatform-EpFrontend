@@ -6,7 +6,7 @@
         新增班级
       </el-button>
     </div>
-    
+
     <el-card>
       <el-table :data="classList" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
@@ -20,25 +20,13 @@
         </el-table-column>
         <el-table-column label="操作" width="250">
           <template #default="scope">
-            <el-button 
-              type="primary" 
-              size="small"
-              @click="handleViewStudents(scope.row)"
-            >
+            <el-button type="primary" size="small" @click="handleViewStudents(scope.row)">
               学生列表
             </el-button>
-            <el-button 
-              type="warning" 
-              size="small"
-              @click="handleEditClass(scope.row)"
-            >
+            <el-button type="warning" size="small" @click="handleEditClass(scope.row)">
               编辑
             </el-button>
-            <el-button 
-              type="danger" 
-              size="small"
-              @click="handleDeleteClass(scope.row)"
-            >
+            <el-button type="danger" size="small" @click="handleDeleteClass(scope.row)">
               删除
             </el-button>
           </template>
@@ -53,6 +41,9 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getClasses, deleteClass } from '../../../api/class'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+dayjs.extend(utc)
 
 const router = useRouter()
 const loading = ref(false)
@@ -62,7 +53,7 @@ const classList = ref([])
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   const date = new Date(dateString)
-  return date.toLocaleString()
+  return dayjs.utc(dateString).local().format('YYYY-MM-DD HH:mm:ss')
 }
 
 // 获取班级列表
@@ -106,10 +97,10 @@ const handleDeleteClass = async (row) => {
         type: 'warning'
       }
     )
-    
+
     await deleteClass(row.id)
     ElMessage.success('删除成功')
-    
+
     // 刷新列表
     fetchClasses()
   } catch (error) {
