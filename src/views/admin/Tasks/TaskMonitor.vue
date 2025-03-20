@@ -47,9 +47,10 @@
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column label="学生" width="120">
           <template #default="scope">
-            {{ scope.row.student?.name || '未知' }}
-            <el-tooltip content="学号" placement="top">
-              <el-text type="info" class="student-id">{{ scope.row.student_id }}</el-text>
+
+            <el-tooltip :content="scope.row.student_number" placement="top">
+              <!-- <el-text type="info" class="student-id">{{ scope.row.student_number }}</el-text> -->
+              {{ scope.row.student_name || '未知' }}
             </el-tooltip>
           </template>
         </el-table-column>
@@ -132,6 +133,7 @@ import { getStudentTasks, forceEndStudentTask, getTasks } from '../../../api/tas
 import { getClasses } from '../../../api/class'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { Refresh, CopyDocument } from '@element-plus/icons-vue'
+import dateUtils from '../../../utils/dateUtils';
 
 const loading = ref(false)
 const studentTasks = ref([])
@@ -196,16 +198,15 @@ const getTaskTypeTag = (type) => {
 
 // 检查实验是否运行中
 const isRunning = (task) => {
-  const status = task.ecs_instance_status || task.container_status
-  return status === 'Running' || status === 'Starting'
+  return task.status === 'Running' || task.status === 'Starting'
 }
 
 // 计算运行时长
 const calculateRuntime = (task) => {
   if (!task.start_at) return '-'
 
-  const start = new Date(task.start_at)
-  const end = task.end_at ? new Date(task.end_at) : new Date()
+  const start = new Date(dateUtils.formatLocalTime(task.start_at))
+  const end = task.end_at ? new Date(dateUtils.formatLocalTime(task.end_at)) : new Date()
 
   const diff = Math.floor((end - start) / 1000)
 

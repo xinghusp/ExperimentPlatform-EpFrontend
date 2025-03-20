@@ -139,6 +139,7 @@ import { useRouter } from 'vue-router'
 import { getStudentTasks, forceEndStudentTask, getTasks } from '../../api/task'
 import { getClasses } from '../../api/class'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import dateUtils from '../../utils/dateUtils'
 
 const router = useRouter()
 const loading = ref(false)
@@ -154,7 +155,7 @@ const stats = reactive({
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  const date = new Date(dateString)
+  const date = new Date(dateUtils.formatLocalTime(dateString))
   return date.toLocaleString()
 }
 
