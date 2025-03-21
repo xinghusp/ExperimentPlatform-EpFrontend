@@ -206,10 +206,14 @@ const isRunning = (task) => {
 const calculateRuntime = (task) => {
   if (!task.start_at) return '-'
   if ((task.status == 'Stopped' || task.status == 'Error') && !task.end_at) return '-'
-  const start = new Date(task.start_at)
-  const end = task.end_at ? new Date(task.end_at) : new Date()
 
-  const diff = Math.floor((end - start) / 1000)
+  // Parse start time, converting from UTC to local
+  const start = dayjs.utc(task.start_at).local()
+  // Parse end time if it exists, otherwise use current local time
+  const end = task.end_at ? dayjs.utc(task.end_at).local() : dayjs()
+
+  // Calculate difference in seconds
+  const diff = end.diff(start, 'second')
 
   if (diff < 60) return `${diff}秒`
   if (diff < 3600) return `${Math.floor(diff / 60)}分钟`
