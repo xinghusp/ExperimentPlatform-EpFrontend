@@ -301,7 +301,7 @@ async function setupJupyterConnection() {
         const tokenData = await getJupyterToken(studentTaskId.value)
         jupyterUrl.value = tokenData.url
         if (tokenData.port != null) { // nginx+cookie认证没搞定，临时先用端口直接访问了
-            jupyterUrl.value = "http://" + location.hostname + ":" + tokenData.port
+            jupyterUrl.value = "http://" + import.meta.env.jupyterBaseUrl ?? location.hostname + ":" + tokenData.port
         }
         loading.value = false
     } catch (error) {
